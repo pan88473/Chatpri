@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>MiniChat Lite</title>
+<title>MiniChat Ventana</title>
 <style>
   :root {
-    --bg-alpha: 0.35; /* Nivel de oscuridad de fondo */
-    --accent: #00e676;
-    --my-msg: rgba(0, 180, 90, 0.55);
-    --other-msg: rgba(30, 30, 30, 0.65);
+    --bg-alpha: 0.35;
+    --my-msg: rgba(0, 175, 85, 0.62);
+    --other-msg: rgba(25, 25, 25, 0.72);
   }
 
   * {
@@ -28,20 +27,33 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    /* Sombra en el texto para leer fácil con transparencia alta */
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
   }
 
-  /* Barra superior ultra compacta */
+  /* Barra superior compacta */
   header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 8px;
-    background: rgba(0, 0, 0, 0.6);
+    padding: 5px 8px;
+    background: rgba(0, 0, 0, 0.65);
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    font-size: 13px;
+    font-size: 12px;
     flex-shrink: 0;
+  }
+
+  .status-wrap {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  #status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff5252;
+    display: inline-block;
   }
 
   .top-btn {
@@ -50,11 +62,11 @@
     color: #fff;
     padding: 3px 7px;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
   }
 
-  /* Área de mensajes */
+  /* Contenedor del chat */
   #chat {
     flex: 1;
     overflow-y: auto;
@@ -88,7 +100,6 @@
 
   .sender {
     font-size: 10px;
-    opacity: 0.85;
     color: #ffd54f;
     margin-bottom: 2px;
     font-weight: bold;
@@ -101,17 +112,17 @@
     margin-top: 2px;
   }
 
-  /* Stickers */
+  /* Stickers en el chat */
   .sticker-img {
-    width: 90px;
-    height: 90px;
+    width: 88px;
+    height: 88px;
     object-fit: contain;
     display: block;
   }
 
   /* Botón de audio ligero */
   .audio-btn {
-    background: rgba(0, 0, 0, 0.45);
+    background: rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.4);
     color: #fff;
     padding: 5px 10px;
@@ -127,27 +138,27 @@
   /* Panel de Stickers */
   #sticker-panel {
     display: none;
-    background: rgba(15, 15, 15, 0.9);
+    background: rgba(15, 15, 15, 0.92);
     border-top: 1px solid rgba(255, 255, 255, 0.2);
     padding: 6px;
-    max-height: 145px;
+    max-height: 150px;
     overflow-y: auto;
   }
 
   .sticker-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
     gap: 6px;
     align-items: center;
   }
 
   .sticker-item {
-    width: 55px;
-    height: 55px;
+    width: 52px;
+    height: 52px;
     object-fit: contain;
     cursor: pointer;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
     padding: 2px;
   }
 
@@ -157,7 +168,7 @@
     margin-top: 6px;
   }
 
-  .add-sticker-bar input {
+  .add-sticker-bar input[type="text"] {
     flex: 1;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.25);
@@ -165,15 +176,16 @@
     padding: 4px 6px;
     border-radius: 4px;
     font-size: 11px;
+    min-width: 0;
   }
 
-  /* Barra inferior de envío */
+  /* Barra inferior */
   footer {
     display: flex;
     align-items: center;
     gap: 4px;
     padding: 5px;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.72);
     border-top: 1px solid rgba(255, 255, 255, 0.15);
     flex-shrink: 0;
   }
@@ -214,6 +226,12 @@
     border-color: #ff8a80;
   }
 
+  .icon-btn.cancel {
+    background: #555;
+    display: none;
+    font-size: 13px;
+  }
+
   .icon-btn.send {
     background: #00c853;
     border-color: #69f0ae;
@@ -223,10 +241,13 @@
 <body>
 
 <header>
-  <button class="top-btn" onclick="changeName()" id="user-btn">👤 Nombre</button>
+  <div class="status-wrap">
+    <span id="status-dot" title="Estado de conexión"></span>
+    <button class="top-btn" onclick="changeName()" id="user-btn">👤 Nombre</button>
+  </div>
   <div style="display:flex; gap:4px;">
     <button class="top-btn" onclick="toggleAlpha()" title="Cambiar transparencia">👁️ Fondo</button>
-    <button class="top-btn" onclick="clearChat()" title="Limpiar chat">🗑️</button>
+    <button class="top-btn" onclick="clearChat()" title="Borrar mensajes">🗑️</button>
   </div>
 </header>
 
@@ -236,14 +257,19 @@
 <div id="sticker-panel">
   <div class="sticker-grid" id="sticker-list"></div>
   <div class="add-sticker-bar">
-    <input type="text" id="sticker-url" placeholder="Pega link de imagen/GIF para nuevo sticker...">
-    <button class="top-btn" onclick="addNewSticker()">+ Guardar</button>
+    <label class="top-btn" style="display:flex; align-items:center;">
+      📁 Foto
+      <input type="file" id="sticker-file" accept="image/*" style="display:none" onchange="uploadStickerFile(event)">
+    </label>
+    <input type="text" id="sticker-url" placeholder="O pega link de GIF/imagen...">
+    <button class="top-btn" onclick="addNewSticker()">+ Link</button>
   </div>
 </div>
 
 <footer>
   <button class="icon-btn" onclick="toggleStickers()">😊</button>
   <input type="text" id="text-input" placeholder="Mensaje..." autocomplete="off">
+  <button class="icon-btn cancel" id="cancel-mic-btn" onclick="cancelRecord()" title="Cancelar audio">✖</button>
   <button class="icon-btn" id="mic-btn" onclick="toggleRecord()">🎤</button>
   <button class="icon-btn send" onclick="sendText()">➤</button>
 </footer>
@@ -254,29 +280,44 @@
 
 <script>
   // ==========================================
-  // 1. PEGA AQUÍ EL LINK DE TU FIREBASE RTDB
+  // TU CONFIGURACIÓN DE FIREBASE INTEGRADA
   // ==========================================
   const firebaseConfig = {
-    databaseURL: "https://TU-PROYECTO-default-rtdb.firebaseio.com"
+    apiKey: "AIzaSyActs50ep97GXZ-zEBpeEbXG6XrChGKOYs",
+    authDomain: "chat-d9a84.firebaseapp.com",
+    databaseURL: "https://chat-d9a84-default-rtdb.firebaseio.com",
+    projectId: "chat-d9a84",
+    storageBucket: "chat-d9a84.firebasestorage.app",
+    messagingSenderId: "1017387007400",
+    appId: "1:1017387007400:web:57e1da1518c9b451fef19d",
+    measurementId: "G-R1TJDCQ2WQ"
   };
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
-  const chatRef = db.ref("mensajes");
-  const stickersRef = db.ref("stickers");
 
-  // Usuario e interfaz
-  let myName = localStorage.getItem("chat_user") || "Sam";
+  // Rutas separadas para no mezclarse con tu otro proyecto
+  const chatRef = db.ref("aweb_chat_v1/mensajes");
+  const stickersRef = db.ref("aweb_chat_v1/stickers");
+
+  // Indicador de conexión en vivo
+  const statusDot = document.getElementById("status-dot");
+  db.ref(".info/connected").on("value", (snap) => {
+    statusDot.style.background = (snap.val() === true) ? "#00e676" : "#ff5252";
+  });
+
+  // Usuario y transparencia
+  let myName = localStorage.getItem("aweb_chat_user") || "Sam";
   document.getElementById("user-btn").textContent = "👤 " + myName;
 
-  let alphaLevels = [0.35, 0.05, 0.75];
+  let alphaLevels = [0.35, 0.05, 0.78];
   let alphaIdx = 0;
 
   function changeName() {
     const nuevo = prompt("Tu nombre en el chat:", myName);
     if (nuevo && nuevo.trim()) {
       myName = nuevo.trim();
-      localStorage.setItem("chat_user", myName);
+      localStorage.setItem("aweb_chat_user", myName);
       document.getElementById("user-btn").textContent = "👤 " + myName;
     }
   }
@@ -292,7 +333,7 @@
   }
 
   // ==========================================
-  // 2. ENVIAR Y RECIBIR MENSAJES (LÍMITE 25)
+  // MENSAJES EN TIEMPO REAL (MÁXIMO 25 EN PANTALLA)
   // ==========================================
   const chatBox = document.getElementById("chat");
   const textInput = document.getElementById("text-input");
@@ -314,12 +355,11 @@
   }
 
   function clearChat() {
-    if (confirm("¿Borrar los mensajes para ambos?")) {
+    if (confirm("¿Limpiar los mensajes para ambos?")) {
       chatRef.remove();
     }
   }
 
-  // Escuchar solo los últimos 25 mensajes para cero lag
   chatRef.limitToLast(25).on("child_added", (snap) => {
     const data = snap.val();
     const div = document.createElement("div");
@@ -342,7 +382,6 @@
     `;
 
     chatBox.appendChild(div);
-    // Mantener máximo 25 elementos en el DOM
     while (chatBox.children.length > 25) {
       chatBox.removeChild(chatBox.firstChild);
     }
@@ -360,7 +399,7 @@
   }
 
   // ==========================================
-  // 3. REPRODUCTOR Y GRABADOR DE AUDIO LIGERO
+  // AUDIO LIGERO CON OPCIÓN DE CANCELAR
   // ==========================================
   let currentAudio = null;
 
@@ -380,22 +419,30 @@
   let mediaRecorder = null;
   let audioChunks = [];
   let isRecording = false;
+  let cancelAudioFlag = false;
   const micBtn = document.getElementById("mic-btn");
+  const cancelMicBtn = document.getElementById("cancel-mic-btn");
 
   async function toggleRecord() {
     if (!isRecording) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // 16kbps para que el audio pese poquísimo y se envíe al instante
-        const options = { audioBitsPerSecond: 16000 };
-        mediaRecorder = new MediaRecorder(stream, options);
+        try {
+          mediaRecorder = new MediaRecorder(stream, { audioBitsPerSecond: 16000 });
+        } catch (e) {
+          mediaRecorder = new MediaRecorder(stream);
+        }
         audioChunks = [];
+        cancelAudioFlag = false;
 
         mediaRecorder.ondataavailable = e => {
           if (e.data.size > 0) audioChunks.push(e.data);
         };
 
         mediaRecorder.onstop = () => {
+          stream.getTracks().forEach(t => t.stop());
+          if (cancelAudioFlag) return;
+
           const blob = new Blob(audioChunks, { type: "audio/webm" });
           const reader = new FileReader();
           reader.onloadend = () => {
@@ -407,28 +454,41 @@
             });
           };
           reader.readAsDataURL(blob);
-          stream.getTracks().forEach(t => t.stop());
         };
 
         mediaRecorder.start();
         isRecording = true;
         micBtn.classList.add("recording");
         micBtn.textContent = "⏹️";
-        textInput.placeholder = "Grabando... toca ⏹️ para enviar";
+        cancelMicBtn.style.display = "flex";
+        textInput.placeholder = "Grabando... ⏹️ envía / ✖ cancela";
       } catch (err) {
-        alert("Permite el micrófono en la app para grabar audios.");
+        alert("Activa el permiso de micrófono para AWeb Window en los Ajustes de tu celular.");
       }
     } else {
       mediaRecorder.stop();
-      isRecording = false;
-      micBtn.classList.remove("recording");
-      micBtn.textContent = "🎤";
-      textInput.placeholder = "Mensaje...";
+      resetMicUI();
     }
   }
 
+  function cancelRecord() {
+    if (isRecording && mediaRecorder) {
+      cancelAudioFlag = true;
+      mediaRecorder.stop();
+      resetMicUI();
+    }
+  }
+
+  function resetMicUI() {
+    isRecording = false;
+    micBtn.classList.remove("recording");
+    micBtn.textContent = "🎤";
+    cancelMicBtn.style.display = "none";
+    textInput.placeholder = "Mensaje...";
+  }
+
   // ==========================================
-  // 4. SISTEMA DE STICKERS COMPARTIDOS
+  // STICKERS (POR LINK O DESDE GALERÍA)
   // ==========================================
   const defaultStickers = [
     "https://fonts.gstatic.com/s/e/notoemoji/latest/1f60d/512.webp",
@@ -464,7 +524,7 @@
 
   defaultStickers.forEach(renderSticker);
 
-  stickersRef.on("child_added", snap => {
+  stickersRef.limitToLast(30).on("child_added", snap => {
     renderSticker(snap.val().url);
   });
 
@@ -474,6 +534,35 @@
     if (!url) return;
     stickersRef.push({ url: url });
     input.value = "";
+  }
+
+  // Convierte cualquier foto del celular en un sticker ultraligero (110x110px)
+  function uploadStickerFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        const maxSize = 110;
+        let w = img.width;
+        let h = img.height;
+        if (w > h) {
+          if (w > maxSize) { h *= maxSize / w; w = maxSize; }
+        } else {
+          if (h > maxSize) { w *= maxSize / h; h = maxSize; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        const compressedDataUrl = canvas.toDataURL("image/webp", 0.75);
+        stickersRef.push({ url: compressedDataUrl });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   }
 </script>
 </body>
